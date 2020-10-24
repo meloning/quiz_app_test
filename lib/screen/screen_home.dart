@@ -11,6 +11,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Quiz> quizs = [];
   bool isLoading = false;
 
@@ -18,8 +19,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       isLoading = true;
     });
-    final response = await http.get(
-        'https://drf-quiz-test.herokuapp.com/quiz/3/');
+    final response =
+        await http.get('https://drf-quiz-test.herokuapp.com/quiz/3/');
     if (response.statusCode == 200) {
       setState(() {
         quizs = parseQuizs(utf8.decode(response.bodyBytes));
@@ -50,9 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery
-        .of(context)
-        .size;
+    Size screenSize = MediaQuery.of(context).size;
     double width = screenSize.width;
     double height = screenSize.height;
 
@@ -61,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onWillPop: () async => false,
         child: SafeArea(
           child: Scaffold(
+            key: _scaffoldKey,
             appBar: AppBar(
               title: Text('My Quiz App'),
               backgroundColor: Colors.deepPurple,
@@ -119,6 +119,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         color: Colors.deepPurple,
                         onPressed: () {
+                          _scaffoldKey.currentState.showSnackBar(SnackBar(
+                            content: Row(
+                              children: [
+                                CircularProgressIndicator(),
+                                Padding(
+                                  padding: EdgeInsets.only(left: width * 0.036),
+                                ),
+                                Text('로딩 중...'),
+                              ],
+                            ),
+                          ));
+
                           _fetchQuizs().whenComplete(() {
                             return Navigator.push(
                                 context,
